@@ -135,8 +135,116 @@ Save this as a new .dta file.
 
 ## Part 4: Autocorrelations
 
+To start quantifying the seasonality of this series, load the linearly adjusted 2014 to present data into Stata, and:
+```
+ac active_editors // the chart below
+corrgram active_editors // to get the tabulated version
+```
+[GRAPH]
+
+These are very useful results for considering the impact of seasonality.
+
+There are significant autocorrelations on the 1st (0.5006), 2nd (0.2749), 12th (0.6105), 24th (0.4938), and 36th lag (0.4847). The strongest autocorrelation is on the 12th lag, 0.11 over the 1st lag.
+
+The strength of the 12th, 24th, and 36th lags’ autocorrelations (i.e., the same month in the 1st, 2nd, and 3rd years prior) indicates a very strong seasonal influence on this series. 
+
+Their surpassing (in the case of the 12th lag) or roughly equaling (24th/36th lags) the 1st lag’s autocorrelations indicates a very strong effect of seasonality as compared to cyclical factors.
+
+Considering the same month in the 3 years prior (i.e., the 12th/24th/36th lags), there is some decay from the first to second, but minimal decay to the second and third. It would be interesting to review autocorrelations beyond 40 lags, however, given the closeness of the 36th lag to the 95% confidence interval and the relatively small number of observations, increasing the number of lags would not be statistically feasible.
+
 ### Autocorrelations for 2008 to 2014
+
+Given the visible spikes in March of the 2008 to 2014 data (see part 3), it seems relevant to also run autocorrelations on the 2008-2014 data, to compare with the above.
+
+Load the combined 2008 to 2014 adjusted dataset into Stata, and run:
+```
+ac adjusted if month < tm(2014m1)
+```
+[GRAPH]
+
+This is roughly what I expected, considering the results of reviewing the trend-adjusted data. 
+
+Though there is a statistically significant autocorrelation on the 12th lag, and spike on the 24th lag, the 1st and 2nd lags have higher and relatively strong autocorrelations. This indicates a relatively greater impact of cyclical factors, as compared to seasonality, than the 2014 to present data.
+
+Given the noise created by the cyclical component of the 'decline' period, it does not seem useful to include this data in further analyses. It is something to keep in mind for interpretations and when I consider the causes of this series’ seasonality, but not for estimating seasonal adjustments.
 
 ## Part 5: Seasonal adjustments
 
+To prepare the dataset for this part, open the 2014 to present adjusted data and run:
+```
+rename month time
+generate m=month(dofm(month))
+generate m1=(m==1)
+generate m2=(m==2)
+generate m3=(m==3)
+generate m4=(m==4)
+generate m5=(m==5)
+generate m6=(m==6)
+generate m7=(m==7)
+generate m8=(m==8)
+generate m9=(m==9)
+generate m10=(m==10)
+generate m11=(m==11)
+generate m12=(m==12)
+gen mean = 37477.41 // this is the mean of the 2014 to present data
+```
+
+To generate seasonal dummies, using March as the base month:
+```
+regress active_editors b3.m
+predict seasonal_adjustment
+predict residuals, residuals
+```
+[TABLE]
+
+An r-squared as high as 0.6472 is expected, given the comparatively weak cyclical component, and that this is trend adjusted. 
+
+To overlay the seasonal adjustments on the time series:
+```
+tsline active_editors seasonal_adjustment
+```
+[GRAPH]
+
+Visually, this seems to be a very strong model.
+
+To see whether this sufficiently captures the seasonality of this series, I reviewed the model's residuals:
+```
+tsline residuals
+summarize residuals
+```
+[GRAPH]
+
+[TABLE]
+
+Though the mean is effectively zero, there does appear to be a cyclical component: there are extended periods where the residuals are at a similar displacement from the mean.
+
+A review of the residuals' autocorrelations can provide more insight into whether there is seasonality not captured by the simple seasonal dummy adjustments.
+
+```
+ac residuals
+```
+[GRAPH]
+
+Even with this small number of observations, we have strong indication of a cyclical component, with significant autocorrelations on the 1st, 2nd, and 3rd lags, rapidly weakening, with slight (but insignificant) negative autocorrelations on the lags for the year prior.
+
+Additionally, the autocorrelation plot shows no indication of residual seasonality not captured in the seasonal adjustments. This indicates that seasonality was relatively constant in this time period, at least enough so that it is not visible in an autocorrelation plot.
+
+It is very good, for this analysis of seasonality, that the only residual on this model appears to be the series' cyclical component.
+
+To create an adjusted time series and overlay it on active_editors:
+```
+gen adjusted = mean + residuals
+tsline active_editors adjusted
+```
+[GRAPH]
+
+Save this as a new .dta file.
+
+
 ## Part 6: Visualizing seasonality
+
+
+
+
+
+
