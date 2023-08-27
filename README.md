@@ -5,4 +5,4 @@ This repository includes a step-by-step process and commentary of my project to 
 1. [Section 0: What is this project?](/section%200.md)
 
 
-Stata .do files are stored in the [do files folder](/do%20files).
+Stata .do files are in the [do files folder](/do%20files). Graphs as .svgs, and tables/results as .pngs, are in the [graphs folder](/graphs).
