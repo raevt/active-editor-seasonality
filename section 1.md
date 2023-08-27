@@ -12,7 +12,7 @@ drop timerangestart timerangeend
 ```
 Using tsmktim, generate a new month variable:
 ```
-ssc install tsmktim // If you don't have tsmktim yet
+ssc install tsmktim // If tsmktim is not installed
 tsmktim time, start(2001m1)
 drop month
 rename time month
