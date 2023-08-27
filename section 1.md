@@ -27,7 +27,7 @@ After loading the .dta file created in part 0, graph the active_editors time ser
 ```
 tsline active editors
 ```
-[GRAPH]
+![](/graphs/part%201%20entire%20time%20series%20tsline.svg)
 
 This time series indicates three distinct periods:
 1. The 'spike', up until roughly 2008
@@ -42,11 +42,11 @@ For this project, I am mostly interested in the plateau, initially mentioned in 
 ```
 tsline active_editors if month >= tm(2014m1)
 ```
-[GRAPH]
+![](/graphs/part%202%20plateau%20tsline.svg)
 ```
 summarize active_editors if month >= tm(2014m1)
 ```
-[TABLE]
+![](/graphs/part%202%20plateau%20summary%20stats.png)
 
 Reviewing the time series line and summary statistics for the plateau, there is visibly a strong seasonal component, and possibly a slight positive trend. The trend needs to be considered before seasonality.
 
@@ -56,7 +56,7 @@ In considering whether there is a trend component in this series, run a linear r
 ```
 regress active_editors month if month >= tm(2014m1)
 ```
-[TABLE]
+![](/graphs/part%203%202014%20to%20present%20regression.png)
 
 This result strongly indicates a trend component, with a t-statistic of 5.30 and p-value of 0. However, the average month-over-month change is relatively small, at 29 active editors.
 
@@ -68,6 +68,8 @@ predict y if month >= tm(2014m1)
 label var y "Linear Regression"
 tsline active_editors y if month >= tm(2014m1)
 ```
+![](/graphs/part%203%20linear%20regression%20overlaid%202014%20to%20present.svg)
+
 Over the 113 months included in this regression, with a slope of 28.89, the regression line increased from 35,859.26 to 39,095.56. This is a change of 3,236.3 active editors.
 
 Though an estimated ~3,200 more monthly active editors in a nearly 10 year period is not exactly a large number, it is a statistically significant trend component that requires adjustment, prior to reviewing seasonality
@@ -78,7 +80,7 @@ summarize y // specifically to find the mean, which is 37477.41
 gen adjusted = (active_editors - y) + 37477.41
 tsline active_editors adjusted if month >= tm(2014m1)
 ```
-[GRAPH]
+![](/graphs/part%203%20linearly%20adjusted%20plateau%20overlaid.svg)
 
 Prepare a new dataset with this adjusted data:
 ```
@@ -102,7 +104,7 @@ predict y if month < tm(2014m1)
 label var y "Linear Regression"
 tsline active_editors y
 ```
-[GRAPH]
+![](/graphs/part%203%20linear%20regression%20overlaid%202008%20to%202014.svg)
 
 To adjust this data to focus on seasonality, it seems best to use the mean of the 2014 to present data, which is 37477.41:
 ```
@@ -110,7 +112,7 @@ gen adjusted = (active_editors - y) + 37477.41 if month < tm(2014m1)
 replace adjusted = active_editors if month >= tm(2014m1)
 tsline adjusted
 ```
-[GRAPH]
+![](/graphs/part%203%202008%20to%202014%20adjusted.svg)
 
 I've added a bar denoting the switch between the linearly adjusted 2008 to 2014 data, and the unmodified 2014 to present data. I've also circled in red every March in the adjusted period.
 
@@ -127,6 +129,8 @@ predict x if month >= tm(2014m1)
 replace adjusted = (active_editors-x) + 37477.41 if month >= tm(2014m1)
 tsline active_editors adjusted
 ```
+![](/graphs/part%203%202008%20to%20present%20combined%20adjusted.svg)
+
 Save this as a new .dta file.
 
 ## Part 4: Autocorrelations
