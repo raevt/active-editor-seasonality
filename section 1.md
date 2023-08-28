@@ -243,8 +243,177 @@ Save this as a new .dta file.
 
 ## Part 6: Visualizing seasonality
 
+This part explores other methods of visualizing the series' seasonality and estimated seasonal dummies.
+
+I decided to create a graph showing a "typical" year, i.e., the 2014 to present estimated seasonal dummies. The mean of the series is 0, and each plotted point represents a month's displacement from the series' mean as estimated in the seasonal dummy model:
+```
+gen monthly_displacement = seasonal_adjustment - mean if time <= tm(2015m1)
+tsline monthly_displacement if time <= tm(2015m1)
+```
+
+My next goal was to graph each month's displacement from its year's mean as a continuous time series. This involves reshaping the data. Opening the .dta file created in part 5:
+```
+gen year = floor(time/12)
+drop time m1 m2 m3 m4 m5 m6 m7 m8 m9 m10 m11 m12 mean seasonal_adjustment residuals adjusted 
+rename m month
+reshape wide active_editors, i(year) j(month)
+egen mean_editors = rowmean(active_editors1 - active_editors12)
+tsmktim time, start(2014)
+tsset time
+drop year
+order time
+rename active_editors1 January
+label var January "January"
+rename active_editors2 February
+label var February "February"
+rename active_editors3 March
+label var March "March"
+rename active_editors4 April
+label var April "April"
+rename active_editors5 May
+label var May "May"
+rename active_editors6 June
+label var June "June"
+rename active_editors7 July
+label var July "July"
+rename active_editors8 August
+label var August "August"
+rename active_editors9 September
+label var September "September"
+rename active_editors10 October
+label var October "October"
+rename active_editors11 November
+label var November "November"
+rename active_editors12 December
+label var December "December"
+gen January_adj = January - mean_editors
+gen February_adj = February - mean_editors
+gen March_adj = March - mean_editors
+gen April_adj = April - mean_editors
+gen May_adj = May - mean_editors
+gen June_adj = June - mean_editors
+gen July_adj = July - mean_editors
+gen August_adj = August - mean_editors
+gen September_adj = September - mean_editors
+gen October_adj = October - mean_editors
+gen November_adj = November - mean_editors
+gen December_adj = December - mean_editors
+tsline January_adj February_adj March_adj April_adj May_adj June_adj July_adj August_adj September_adj October_adj November_adj December_adj
+```
+
+Optimally, the use of thje annual mean removes some of the cyclical component, focusing instead on each month's relative displacement from the other months in that same year, rather than from the longer, series mean.
+
+This is a rather messy graph, but can show some interesting patterns. The only year where March was not the highest was 2020, which is likely a result of COVID. It may be useful, in terms of visualizing this for an audience, to pick out 3 or 4 months based on the seasonality model and highlight them.
+
+To run this data including 2008 to 2014 data, open the adjusted 2008 to present dataset created in part 3, and run:
+```
+drop active_editors y x
+rename adjusted active_editors
+generate m=month(dofm(month))
+rename month time
+rename m month
+gen year = floor(time/12)
+drop time
+reshape wide active_editors, i(year) j(month)
+egen mean_editors = rowmean(active_editors1 - active_editors12)
+tsmktim time, start(2008)
+tsset time
+drop year
+order time
+rename active_editors1 January
+label var January "January"
+rename active_editors2 February
+label var February "February"
+rename active_editors3 March
+label var March "March"
+rename active_editors4 April
+label var April "April"
+rename active_editors5 May
+label var May "May"
+rename active_editors6 June
+label var June "June"
+rename active_editors7 July
+label var July "July"
+rename active_editors8 August
+label var August "August"
+rename active_editors9 September
+label var September "September"
+rename active_editors10 October
+label var October "October"
+rename active_editors11 November
+label var November "November"
+rename active_editors12 December
+label var December "December"
+gen January_adj = January - mean_editors
+gen February_adj = February - mean_editors
+gen March_adj = March - mean_editors
+gen April_adj = April - mean_editors
+gen May_adj = May - mean_editors
+gen June_adj = June - mean_editors
+gen July_adj = July - mean_editors
+gen August_adj = August - mean_editors
+gen September_adj = September - mean_editors
+gen October_adj = October - mean_editors
+gen November_adj = November - mean_editors
+gen December_adj = December - mean_editors
+tsline January_adj February_adj March_adj April_adj May_adj June_adj July_adj August_adj September_adj October_adj November_adj December_adj
+```
+
+In considering other ways to present this, specifically the applicability of the seasonal dummy model, it might be interesting to use Kendall tau distances. Each year can be represented as an ordered list of months, from highest to lowest in active editor count. That can be compared to the ranking estimated by the seasonal dummies, whose Kendall tau distance would provide information on each year's "distance" from a "typical" year.
+
+Though the distance provides primarily a measure of the applicability of the seasonal dummies to each year, and not specifically insight into each month's placement, it can give an indication of the volatility of active editor count in certain years compared to others. 
+
+Additionally, this month-by-month insight can be provided by a chart of each year's ordered list. From that list, statistics can be generated on each month's mean placement, and standard deviation.
+
+Given the nature of these calculations, a Python program is more applicable. See [months_analysis.py](/months_analysis.py).
+
+To prepare the data for the Python program, using the file created in the previous visualization:
+```
+drop mean_editors January_adj February_adj March_adj April_adj May_adj June_adj July_adj August_adj September_adj October_adj November_adj December_adj
+```
+Save this as a .csv.
+
+Using that .csv with the Python file will generate three new documents:
+1. Each year and their Kendall tau distance from the seasonal estimates
+2. Table of each year and their ranking
+3. Table of each month and their mean ranking, and standard deviation
+
+(Note that the Python file has the seasonal dummy-estimated monthly ranking manually entered.)
 
 
+With the Kendall tau distnace .csv, open in Stata and run:
+```
+tsset year
+drop in 16/16 // 2023's data is incomplete at time of writing, and thus returns an inaccurate distance
+tsline distance
+```
+[GRAPH]
 
+The maximum possible Kendall tau distance for each given year is 66 ((12*11)/2).
 
+Given the spike in 2020, it seems better to represent this as a scatter plot. In doing so, I also overlaid a linear regression:
+```
+graph twoway (scatter distance year) (lfit distance year)
+regress distance year
+```
+[GRAPH]
 
+[TABLE]
+
+With so few observations, it's hard to make interpretations with any degree of certainty, and of course these are not statistically significant at any traditional confidence level.
+
+However, these results are roughly what I expected given the increased volatility in the 2008 to 2014 period. Higher distances when there is more volatility, lower distances when there is less volatility, because cyclic volatility can distort the seasonal pattern.
+
+In 2020, because March is not the first month (one of only two years where that is the case), there is a significantly higher Kendall tau distance. This is presumably an effect of COVID.
+
+The second output of the months_analysis.py file is a table of each year and its months, ordered by highest to lowest active editor count. I then formatted this table manually in Excel:
+
+[UPlOAD TABLE, LINK IN LINE ABOVE]
+
+This is very interesting. Visually, it seems there is a clear seasonal pattern through this time period. This can be quantified, however.
+
+The third output of the months_analysis.py file is a table of each month, it's mean ordering, and the standard deviation of that distribution. I then formatted this table manually in Excel:
+
+[[UPLOAD TABLE, LINK IN LINE ABOVE]
+
+This, combined with the yearly chart, seasonal dummy estimates, and time series of each month over the years provides a relatively complete picture of this seasonality.
