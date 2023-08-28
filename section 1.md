@@ -140,7 +140,7 @@ To start quantifying the seasonality of this series, load the linearly adjusted 
 ac active_editors // the chart below
 corrgram active_editors // to get the tabulated version
 ```
-[GRAPH]
+![](/graphs/part%204%202014%20to%20present%20autocorrelations.svg)
 
 These are very useful results for considering the impact of seasonality.
 
@@ -160,7 +160,7 @@ Load the combined 2008 to 2014 adjusted dataset into Stata, and run:
 ```
 ac adjusted if month < tm(2014m1)
 ```
-[GRAPH]
+![](/graphs/part%204%202008%20to%202014%20autocorrelations.svg)
 
 This is roughly what I expected, considering the results of reviewing the trend-adjusted data. 
 
@@ -188,14 +188,13 @@ generate m11=(m==11)
 generate m12=(m==12)
 gen mean = 37477.41 // this is the mean of the 2014 to present data
 ```
-
 To generate seasonal dummies, using March as the base month:
 ```
 regress active_editors b3.m
 predict seasonal_adjustment
 predict residuals, residuals
 ```
-[TABLE]
+![](/graphs/part%205%202014%20to%20present%20seasonal%20regression%20results.png)
 
 An r-squared as high as 0.6472 is expected, given the comparatively weak cyclical component, and that this is trend adjusted. 
 
@@ -203,7 +202,7 @@ To overlay the seasonal adjustments on the time series:
 ```
 tsline active_editors seasonal_adjustment
 ```
-[GRAPH]
+![](/graphs/part%205%202014%20to%20present%20overlaid%20seasonal%20dummies.svg)
 
 Visually, this seems to be a very strong model.
 
@@ -212,9 +211,9 @@ To see whether this sufficiently captures the seasonality of this series, I revi
 tsline residuals
 summarize residuals
 ```
-[GRAPH]
+![](/graphs/part%205%20seasonal%20dummies%20residuals.svg)
 
-[TABLE]
+![](/graphs/part%205%20seasonal%20dummies%20residuals%20summary%20stats.png)
 
 Though the mean is effectively zero, there does appear to be a cyclical component: there are extended periods where the residuals are at a similar displacement from the mean.
 
@@ -223,7 +222,7 @@ A review of the residuals' autocorrelations can provide more insight into whethe
 ```
 ac residuals
 ```
-[GRAPH]
+![](/graphs/part%205%20residuals%20autocorrelations.svg)
 
 Even with this small number of observations, we have strong indication of a cyclical component, with significant autocorrelations on the 1st, 2nd, and 3rd lags, rapidly weakening, with slight (but insignificant) negative autocorrelations on the lags for the year prior.
 
@@ -236,10 +235,9 @@ To create an adjusted time series and overlay it on active_editors:
 gen adjusted = mean + residuals
 tsline active_editors adjusted
 ```
-[GRAPH]
+![](/graphs/part%205%20seasonally%20adjusted%202014%20to%20present.svg)
 
 Save this as a new .dta file.
-
 
 ## Part 6: Visualizing seasonality
 
@@ -250,6 +248,7 @@ I decided to create a graph showing a "typical" year, i.e., the 2014 to present 
 gen monthly_displacement = seasonal_adjustment - mean if time <= tm(2015m1)
 tsline monthly_displacement if time <= tm(2015m1)
 ```
+![](/graphs/part%206%20typical%20year.svg)
 
 My next goal was to graph each month's displacement from its year's mean as a continuous time series. This involves reshaping the data. Opening the .dta file created in part 5:
 ```
@@ -300,8 +299,9 @@ gen November_adj = November - mean_editors
 gen December_adj = December - mean_editors
 tsline January_adj February_adj March_adj April_adj May_adj June_adj July_adj August_adj September_adj October_adj November_adj December_adj
 ```
+![](/graphs/part%206%202014%20to%20present%20monthly%20tsline.svg)
 
-Optimally, the use of thje annual mean removes some of the cyclical component, focusing instead on each month's relative displacement from the other months in that same year, rather than from the longer, series mean.
+Optimally, the use of the annual mean removes some of the cyclical component, focusing instead on each month's relative displacement from the other months in that same year, rather than from the longer, series mean.
 
 This is a rather messy graph, but can show some interesting patterns. The only year where March was not the highest was 2020, which is likely a result of COVID. It may be useful, in terms of visualizing this for an audience, to pick out 3 or 4 months based on the seasonality model and highlight them.
 
@@ -358,6 +358,7 @@ gen November_adj = November - mean_editors
 gen December_adj = December - mean_editors
 tsline January_adj February_adj March_adj April_adj May_adj June_adj July_adj August_adj September_adj October_adj November_adj December_adj
 ```
+![](/graphs/part%206%202008%20to%20present%20monthly%20tsline.svg)
 
 In considering other ways to present this, specifically the applicability of the seasonal dummy model, it might be interesting to use Kendall tau distances. Each year can be represented as an ordered list of months, from highest to lowest in active editor count. That can be compared to the ranking estimated by the seasonal dummies, whose Kendall tau distance would provide information on each year's "distance" from a "typical" year.
 
@@ -387,7 +388,7 @@ tsset year
 drop in 16/16 // 2023's data is incomplete at time of writing, and thus returns an inaccurate distance
 tsline distance
 ```
-[GRAPH]
+![](/graphs/part%206%20kendall%20tau%20tsline.svg)
 
 The maximum possible Kendall tau distance for each given year is 66 ((12*11)/2).
 
@@ -396,9 +397,9 @@ Given the spike in 2020, it seems better to represent this as a scatter plot. In
 graph twoway (scatter distance year) (lfit distance year)
 regress distance year
 ```
-[GRAPH]
+![](/graphs/part%206%20kendall%20tau%20scatter%20plot.svg)
 
-[TABLE]
+![](/graphs/part%206%20kendall%20tau%20linear%20regression.png)
 
 With so few observations, it's hard to make interpretations with any degree of certainty, and of course these are not statistically significant at any traditional confidence level.
 
