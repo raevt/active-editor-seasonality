@@ -409,12 +409,12 @@ In 2020, because March is not the first month (one of only two years where that 
 
 The second output of the months_analysis.py file is a table of each year and its months, ordered by highest to lowest active editor count. I then formatted this table manually in Excel:
 
-[UPlOAD TABLE, LINK IN LINE ABOVE]
+![](/graphs/annual%20order%20table.svg)
 
 This is very interesting. Visually, it seems there is a clear seasonal pattern through this time period. This can be quantified, however.
 
 The third output of the months_analysis.py file is a table of each month, it's mean ordering, and the standard deviation of that distribution. I then formatted this table manually in Excel:
 
-[[UPLOAD TABLE, LINK IN LINE ABOVE]
+![](/graphs/monthly%20order%20stats.svg)
 
 This, combined with the yearly chart, seasonal dummy estimates, and time series of each month over the years provides a relatively complete picture of this seasonality.
