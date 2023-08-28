@@ -411,7 +411,7 @@ The second output of the months_analysis.py file is a table of each year and its
 
 <img src="https://raw.githubusercontent.com/raevt/active-editor-seasonality/30f81c1c4cd40c345df97887659fd91d7cb615e0/graphs/annual%20order%20table.svg" width="200%">
 
-This is very interesting. Visually, it seems there is a clear seasonal pattern through this time period. This can be quantified, however.
+This is very interesting. Visually, it seems there is a clear seasonal pattern through this time period.
 
 The third output of the months_analysis.py file is a table of each month, it's mean ordering, and the standard deviation of that distribution. I then formatted this table manually in Excel:
 
