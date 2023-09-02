@@ -215,7 +215,7 @@ summarize residuals
 
 ![](/graphs/part%205%20seasonal%20dummies%20residuals%20summary%20stats.png)
 
-Though the mean is effectively zero, there does appear to be a cyclical component: there are extended periods where the residuals are at a similar displacement from the mean.
+Visually, there does appear to be a cyclical component: there are extended periods where the residuals are at a similar displacement from the mean.
 
 A review of the residuals' autocorrelations can provide more insight into whether there is seasonality not captured by the simple seasonal dummy adjustments.
 
